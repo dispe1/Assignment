@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <BorderPane layoutX="14.0" layoutY="14.0" prefHeight="780.0" prefWidth="350.0" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0">
+         <top>
+            <MenuBar BorderPane.alignment="CENTER">
+              <menus>
+                <Menu mnemonicParsing="false" text="Load" />
+                <Menu mnemonicParsing="false" text="Edit" />
+                <Menu mnemonicParsing="false" text="Save" />
+              </menus>
+            </MenuBar>
+         </top>
+         <center>
+            <TextArea prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" editable = "false" />
+         </center>
+      </BorderPane>
+      <BorderPane layoutX="406.0" layoutY="10.0" prefHeight="780.0" prefWidth="350.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
+         <top>
+            <MenuBar BorderPane.alignment="CENTER">
+               <menus>
+                  <Menu mnemonicParsing="false" text="Load" />
+                  <Menu mnemonicParsing="false" text="Edit" />
+                  <Menu mnemonicParsing="false" text="Save" />
+               </menus>
+            </MenuBar>
+         </top>
+         <center>
+            <TextArea prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" editable = "false" />
+         </center>
+      </BorderPane>
+      <Button layoutX="366.0" layoutY="389.0" mnemonicParsing="false" text="Compare" />
+      <Button layoutX="384.0" layoutY="366.0" mnemonicParsing="false" text="-&gt;" />
+      <Button layoutX="384.0" layoutY="412.0" mnemonicParsing="false" text="&lt;-" />
+   </children>
+</AnchorPane>
