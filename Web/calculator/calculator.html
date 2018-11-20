@@ -1,0 +1,105 @@
+<head>
+  <!DOCTYPE html>
+  <link rel="stylesheet" href="mystyle.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script type="text/javascript" src="calculator.js"></script>
+
+</head>
+
+<body>
+  <div id="calculator" class="calculator">
+    <div>
+      <h1>Calculator</h1>
+    </div>
+
+    <div id="expression">
+    </div>
+
+    <table id="buttons" class="calculator-fluid">
+      <tr class="row">
+        <td>
+          <button id="num-7" class="btn num">7</button>
+        </td>
+        <td>
+          <button id="num-8" class="btn num">8</button>
+        </td>
+        <td>
+          <button id="num-9" class="btn num">9</button>
+        </td>
+        <td>
+          <button id="op-divide" class="btn">÷</button>
+        </td>
+        <td>
+          <button id="clear" class="btn button-orange">AC</button>
+        </td>
+      </tr>
+
+      <tr class="row">
+        <td>
+          <button id="num-4" class="btn num">4</button>
+        </td>
+        <td>
+          <button id="num-5" class="btn num">5</button>
+        </td>
+        <td>
+          <button id="num-6" class="btn num">6</button>
+        </td>
+        <td>
+          <button id="op-multiply" class="btn">x</button>
+        </td>
+        <td>
+          <button id="bracket-left" class="btn">(</button>
+        </td>
+      </tr>
+
+      <tr class="row">
+        <td>
+          <button id="num-1" class="btn num">1</button>
+        </td>
+        <td>
+          <button id="num-2" class="btn num">2</button>
+        </td>
+        <td>
+          <button id="num-3" class="btn num">3</button>
+        </td>
+        <td>
+          <button id="op-subtract" class="btn">-</button>
+        </td>
+        <td>
+          <button id="bracket-right" class="btn">)</button>
+        </td>
+      </tr>
+
+      <tr class="row">
+        <td>
+          <button id="num-0" class="btn num">0</button>
+        </td>
+        <td>
+          <button id="period" class="btn">.</button>
+        </td>
+        <td>
+          <button id="delete" class="btn button-orange">DEL</button>
+        </td>
+        <td>
+          <button id="op-add" class="btn">+</button>
+        </td>
+        <td>
+          <button id="calculate" class="btn button-blue">=</button>
+        </td>
+      </tr>
+
+    </table>
+
+    <div id="calc-history">
+      <span>Calculation history</span>
+      <div class="clear-history">
+        <button id="clear-history" class="btn clear-history">Clear</button>
+      </div>
+      <hr>
+      <div id="calc-history-box">
+
+      </div>
+    </div>
+
+  </div>
+</body>
