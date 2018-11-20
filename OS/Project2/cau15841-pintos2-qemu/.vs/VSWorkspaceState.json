@@ -1,0 +1,14 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\lib",
+    "\\lib\\kernel",
+    "\\projects",
+    "\\projects\\memalloc",
+    "\\projects\\scheduling",
+    "\\threads",
+    "\\utils"
+  ],
+  "SelectedNode": "\\lib\\string.c",
+  "PreviewInSolutionExplorer": false
+}

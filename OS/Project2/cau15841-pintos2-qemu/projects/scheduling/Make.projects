@@ -1,0 +1,4 @@
+# -*- makefile -*-
+
+# Sources for project 1.
+projects/scheduling_SRC  = projects/scheduling/schedulingtest.c

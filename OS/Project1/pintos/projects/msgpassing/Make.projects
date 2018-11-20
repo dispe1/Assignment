@@ -1,0 +1,4 @@
+# -*- makefile -*-
+
+# Sources for project 1.
+projects/msgpassing_SRC  = projects/msgpassing/msgpassingtest.c
