@@ -101,3 +101,10 @@ int main(int argc, char* argv[]) {
 
 	return 0;
 }
+for (i = 0; i < w; i++) {
+	for (j = 0; j < k[i]; j++) {
+		if (min_total < drone_time[i][j]) {
+			min_total = drone_time[i][j];
+		}
+	}
+}
