@@ -36,15 +36,15 @@ le = preprocessing.LabelEncoder()
 for i in cate:
     le.fit(df[i])
     df[i] = le.transform(df[i])
-
-#corrmat = df.corr(method='pearson')
-#f, ax = plt.subplots(figsize=(8, 8))
+'''
+corrmat = df.corr(method='pearson')
+f, ax = plt.subplots(figsize=(8, 8))
 
 # Draw the heatmap using seaborn
-#sns.heatmap(corrmat, vmax=1., square=True)
-#plt.title("Important variables correlation map", fontsize=15)
-#plt.show()
-
+sns.heatmap(corrmat, vmax=1., square=True)
+plt.title("Important variables correlation map", fontsize=15)
+plt.show()
+'''
 y = df['SalePrice']
 df = df.drop(['SalePrice', 'Exterior2nd','EnclosedPorch', 'RoofMatl', 'PoolQC', 'BsmtHalfBath', 'RoofStyle', 'PoolArea', 'MoSold', 'Alley', 'Fence', 'LandContour', 'MasVnrType', '3SsnPorch', 'LandSlope'],axis=1)
 

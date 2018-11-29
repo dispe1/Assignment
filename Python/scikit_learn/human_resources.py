@@ -38,27 +38,27 @@ le = preprocessing.LabelEncoder()
 for i in cate:
     le.fit(df[i])
     df[i] = le.transform(df[i])
-
+'''
 corrmat = df.corr(method='pearson')
 f, ax = plt.subplots(figsize=(8, 8))
 
 # Draw the heatmap using seaborn
 sns.heatmap(corrmat, vmax=1., square=True)
 plt.title("Important variables correlation map", fontsize=15)
-#plt.show()
-
+plt.show()
+'''
 y = df['salary']
 df = df.drop(['salary'],axis=1)
 
-
-clf = xgb.XGBClassifier(max_depth=7, n_estimators=200, colsample_bytree=0.8,
-                        subsample=0.8, nthread=10, learning_rate=0.1)
+'''
+clf = xgb.XGBClassifier(max_depth=20, n_estimators=300, colsample_bytree=0.4,
+                        subsample=0.95, nthread=10, learning_rate=0.07, gamma=0.045,min_child_weight=1.5,reg_alpha=0.65,reg_lambda=0.45)
 clf.fit(df, y)
 # plot the important features #
 fig, ax = plt.subplots(figsize=(12,18))
 xgb.plot_importance(clf, max_num_features=50, height=0.8, ax=ax)
-#plt.show()
-
+plt.show()
+'''
 xtrain, xvalid, ytrain, yvalid = train_test_split(df, y,
                                                   stratify=y,
                                                   random_state=42,
@@ -73,8 +73,8 @@ lr = [clf.__class__,accuracy_score(yvalid, predictions)]
 algo = pd.DataFrame([lr])
 
 
-clf = xgb.XGBClassifier(max_depth=7, n_estimators=200, colsample_bytree=0.8,
-                        subsample=0.8, nthread=10, learning_rate=0.1)
+clf = xgb.XGBClassifier(max_depth=20, n_estimators=300, colsample_bytree=0.4,
+                        subsample=0.95, nthread=10, learning_rate=0.07, gamma=0.045,min_child_weight=1.5,reg_alpha=0.65,reg_lambda=0.45)
 clf.fit(xtrain, ytrain)
 predictions = clf.predict(xvalid)
 print("accuracy_score",accuracy_score(yvalid, predictions))

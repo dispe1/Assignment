@@ -41,15 +41,15 @@ for i in cate:
 
 y = df['color']
 df = df.drop(['color', 'quality'],axis=1)
-
+'''
 clf = xgb.XGBClassifier(max_depth=7, n_estimators=200, colsample_bytree=0.8,
                         subsample=0.8, nthread=10, learning_rate=0.1)
 clf.fit(df, y)
 # plot the important features #
 fig, ax = plt.subplots(figsize=(12,18))
 xgb.plot_importance(clf, max_num_features=50, height=0.8, ax=ax)
-#plt.show()
-
+plt.show()
+'''
 xtrain, xvalid, ytrain, yvalid = train_test_split(df, y,
                                                   stratify=y,
                                                   random_state=42,
