@@ -47,8 +47,8 @@ sns.heatmap(corrmat, vmax=1., square=True)
 plt.title("Important variables correlation map", fontsize=15)
 #plt.show()
 
-y = df['left']
-df = df.drop(['left'],axis=1)
+y = df['salary']
+df = df.drop(['salary'],axis=1)
 
 
 clf = xgb.XGBClassifier(max_depth=7, n_estimators=200, colsample_bytree=0.8,

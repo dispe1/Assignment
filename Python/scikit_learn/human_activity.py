@@ -51,12 +51,12 @@ y = df['Activity']
 df = df.drop(['Activity'],axis=1)
 
 
-clf = xgb.XGBClassifier(max_depth=7, n_estimators=200, colsample_bytree=0.8,
-                        subsample=0.8, nthread=10, learning_rate=0.1)
-clf.fit(df, y)
+#clf = xgb.XGBClassifier(max_depth=7, n_estimators=200, colsample_bytree=0.8,
+#                        subsample=0.8, nthread=10, learning_rate=0.1)
+#clf.fit(df, y)
 # plot the important features #
-fig, ax = plt.subplots(figsize=(12,18))
-xgb.plot_importance(clf, max_num_features=50, height=0.8, ax=ax)
+#fig, ax = plt.subplots(figsize=(12,18))
+#xgb.plot_importance(clf, max_num_features=50, height=0.8, ax=ax)
 #plt.show()
 
 xtrain, xvalid, ytrain, yvalid = train_test_split(df, y,
@@ -80,13 +80,6 @@ predictions = clf.predict(xvalid)
 print("accuracy_score",accuracy_score(yvalid, predictions))
 xg = [clf.__class__,accuracy_score(yvalid, predictions)]
 algo = algo.append([xg])
-
-clf = MultinomialNB()
-clf.fit(xtrain, ytrain)
-predictions = clf.predict(xvalid)
-print("accuracy_score",accuracy_score(yvalid, predictions))
-mnb = [clf.__class__,accuracy_score(yvalid, predictions)]
-algo = algo.append([mnb])
 
 clf = AdaBoostClassifier()
 clf.fit(xtrain, ytrain)

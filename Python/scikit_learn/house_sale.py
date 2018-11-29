@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from IPython.display import display, HTML
 import seaborn as sns
 
+import xgboost as xgb
 from sklearn.linear_model import Lasso, Ridge, LinearRegression
 from sklearn.svm import SVR
 
@@ -36,16 +37,16 @@ for i in cate:
     le.fit(df[i])
     df[i] = le.transform(df[i])
 
-corrmat = df.corr(method='pearson')
-f, ax = plt.subplots(figsize=(8, 8))
+#corrmat = df.corr(method='pearson')
+#f, ax = plt.subplots(figsize=(8, 8))
 
 # Draw the heatmap using seaborn
-sns.heatmap(corrmat, vmax=1., square=True)
-plt.title("Important variables correlation map", fontsize=15)
-plt.show()
+#sns.heatmap(corrmat, vmax=1., square=True)
+#plt.title("Important variables correlation map", fontsize=15)
+#plt.show()
 
 y = df['SalePrice']
-df = df.drop(['SalePrice'],axis=1)
+df = df.drop(['SalePrice', 'Exterior2nd','EnclosedPorch', 'RoofMatl', 'PoolQC', 'BsmtHalfBath', 'RoofStyle', 'PoolArea', 'MoSold', 'Alley', 'Fence', 'LandContour', 'MasVnrType', '3SsnPorch', 'LandSlope'],axis=1)
 
 xtrain, xvalid, ytrain, yvalid = train_test_split(df, y,
                                                   random_state=42,
@@ -58,8 +59,6 @@ predictions = clf.predict(xvalid)
 print("root_mean_squared_error",sqrt(mean_squared_error(yvalid, predictions)))
 print('r2 score: %.2f' % r2_score(yvalid, predictions))
 print('explained_variance_score: %.2f' % explained_variance_score(yvalid, predictions))
-print("intercept",clf.intercept_)
-print("coef",clf.coef_)
 lr = [clf.__class__,sqrt(mean_squared_error(yvalid, predictions))]
 algo = pd.DataFrame([lr])
 
@@ -69,8 +68,6 @@ predictions = clf.predict(xvalid)
 print("root_mean_squared_error",sqrt(mean_squared_error(yvalid, predictions)))
 print('r2 score: %.2f' % r2_score(yvalid, predictions))
 print('explained_variance_score: %.2f' % explained_variance_score(yvalid, predictions))
-print("intercept",clf.intercept_)
-print("coef",clf.coef_)
 lasso = [clf.__class__,sqrt(mean_squared_error(yvalid, predictions))]
 algo = algo.append([lasso])
 
@@ -80,9 +77,18 @@ predictions = clf.predict(xvalid)
 print("root_mean_squared_error",sqrt(mean_squared_error(yvalid, predictions)))
 print('r2 score: %.2f' % r2_score(yvalid, predictions))
 print('explained_variance_score: %.2f' % explained_variance_score(yvalid, predictions))
-print("intercept",clf.intercept_)
-print("coef",clf.coef_)
 lidge = [clf.__class__,sqrt(mean_squared_error(yvalid, predictions))]
 algo = algo.append([lidge])
+
+clf = xgb.XGBRegressor(max_depth=20, n_estimators=300, colsample_bytree=0.4,
+                        subsample=0.95, nthread=10, learning_rate=0.07, gamma=0.045,min_child_weight=1.5,reg_alpha=0.65,reg_lambda=0.45)
+clf.fit(xtrain, ytrain)
+predictions = clf.predict(xvalid)
+print("root_mean_squared_error",sqrt(mean_squared_error(yvalid, predictions)))
+print('r2 score: %.2f' % r2_score(yvalid, predictions))
+print('explained_variance_score: %.2f' % explained_variance_score(yvalid, predictions))
+xg = [clf.__class__,sqrt(mean_squared_error(yvalid, predictions))]
+algo = algo.append([xg])
+
 
 print(algo.sort_values([1], ascending=[False]))
