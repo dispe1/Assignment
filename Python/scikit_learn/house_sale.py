@@ -83,6 +83,11 @@ algo = algo.append([lidge])
 clf = xgb.XGBRegressor(max_depth=20, n_estimators=300, colsample_bytree=0.4,
                         subsample=0.95, nthread=10, learning_rate=0.07, gamma=0.045,min_child_weight=1.5,reg_alpha=0.65,reg_lambda=0.45)
 clf.fit(xtrain, ytrain)
+'''
+fig, ax = plt.subplots(figsize=(12,18))
+xgb.plot_importance(clf, max_num_features=80, height=0.8, ax=ax)
+plt.show()
+'''
 predictions = clf.predict(xvalid)
 print("root_mean_squared_error",sqrt(mean_squared_error(yvalid, predictions)))
 print('r2 score: %.2f' % r2_score(yvalid, predictions))
