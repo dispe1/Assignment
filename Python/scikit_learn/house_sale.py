@@ -36,6 +36,7 @@ le = preprocessing.LabelEncoder()
 for i in cate:
     le.fit(df[i])
     df[i] = le.transform(df[i])
+
 '''
 corrmat = df.corr(method='pearson')
 f, ax = plt.subplots(figsize=(8, 8))
@@ -47,6 +48,7 @@ plt.show()
 '''
 y = df['SalePrice']
 df = df.drop(['SalePrice', 'Exterior2nd','EnclosedPorch', 'RoofMatl', 'PoolQC', 'BsmtHalfBath', 'RoofStyle', 'PoolArea', 'MoSold', 'Alley', 'Fence', 'LandContour', 'MasVnrType', '3SsnPorch', 'LandSlope'],axis=1)
+
 
 xtrain, xvalid, ytrain, yvalid = train_test_split(df, y,
                                                   random_state=42,

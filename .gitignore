@@ -24,3 +24,7 @@ hs_err_pid*
 Python/MNIST_data/
 
 Python/scikit_learn/~\$hw1\.xlsx
+
+Android/classification/application/\.idea/
+
+*.tflite

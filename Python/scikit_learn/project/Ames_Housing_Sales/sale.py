@@ -6,7 +6,7 @@ from sklearn import preprocessing
 import xgboost as xgb
 from sklearn.linear_model import Lasso, Ridge, LinearRegression
 import numpy as np
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, r2_score
 
 tr_data = pd.read_csv('tr_data.csv')
 
@@ -68,10 +68,8 @@ pred_df.to_csv("output.csv", mode='w')
 def rmse(ytrue, ypredicted):
     return np.sqrt(mean_squared_error(ytrue, ypredicted))
 
-tk_window = tkinter.Tk()
-cwd = os.getcwd()
 ts_ans = pd.read_csv('ts_ans.csv')
 ts_ans = ts_ans.iloc[:, 0]
-tk_window.destroy()
 
 print(rmse(ts_ans, y_pred))
+print(r2_score(ts_ans, y_pred))
