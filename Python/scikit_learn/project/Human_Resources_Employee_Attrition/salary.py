@@ -3,16 +3,13 @@ import pandas as pd
 import tkinter
 import os
 from sklearn import preprocessing
-from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier,ExtraTreesClassifier, VotingClassifier, BaggingClassifier
+import xgboost as xgb
 
 tr_data = pd.read_csv('tr_data.csv')
-
 tr_ans = pd.read_csv('tr_ans.csv')
-
 tr_ans = tr_ans.iloc[:, 0]
-
 ts_data = pd.read_csv('ts_data.csv')
-
 
 cate = [key for key in dict(tr_data.dtypes) if dict(tr_data.dtypes)[key] in ['bool', 'object']]
 le = preprocessing.LabelEncoder()
@@ -26,10 +23,16 @@ for i in cate:
     le.fit(ts_data[i])
     ts_data[i] = le.transform(ts_data[i])
 
-ET = ExtraTreesClassifier()
+ETC = ExtraTreesClassifier()
+XGB = xgb.XGBClassifier(max_depth=20, n_estimators=300, colsample_bytree=0.4, subsample=0.95, nthread=10, learning_rate=0.07, gamma=0.045,min_child_weight=1.5,reg_alpha=0.65,reg_lambda=0.45)
+GBC = GradientBoostingClassifier()
+RFC = RandomForestClassifier()
+BC = BaggingClassifier(n_estimators=50)
 
-ET.fit(tr_data, tr_ans)
-y_pred = ET.predict(ts_data)
+VC = VotingClassifier(estimators=[('bc', BC),('xgb', XGB), ('etc', ETC), ('rfc',RFC), ('gbc',GBC)], voting='hard')
+
+VC.fit(tr_data, tr_ans)
+y_pred = VC.predict(ts_data)
 
 
 pred_df = pd.DataFrame(y_pred)

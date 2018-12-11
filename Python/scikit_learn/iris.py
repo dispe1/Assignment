@@ -18,7 +18,7 @@ from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import LinearSVC
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier,ExtraTreesClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier,ExtraTreesClassifier, VotingClassifier, BaggingClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 from sklearn.metrics import accuracy_score
@@ -62,80 +62,95 @@ plt.show()
 xtrain, xvalid, ytrain, yvalid = train_test_split(df, y,
                                                   stratify=y,
                                                   random_state=42,
-                                                  test_size=0.3, shuffle=True)
+                                                  test_size=0.8, shuffle=True)
 #print(xtrain.shape, xvalid.shape, ytrain.shape, yvalid.shape)
 
-clf = LogisticRegression(C=1.0)
-clf.fit(xtrain, ytrain)
-predictions = clf.predict(xvalid)
+LR = LogisticRegression(C=1.0)
+LR.fit(xtrain, ytrain)
+predictions = LR.predict(xvalid)
 print("accuracy_score",accuracy_score(yvalid, predictions))
-lr = [clf.__class__,accuracy_score(yvalid, predictions)]
+lr = [LR.__class__,accuracy_score(yvalid, predictions)]
 algo = pd.DataFrame([lr])
 
 
-clf = xgb.XGBClassifier(max_depth=7, n_estimators=200, colsample_bytree=0.8,
+XGB = xgb.XGBClassifier(max_depth=7, n_estimators=200, colsample_bytree=0.8,
                         subsample=0.8, nthread=10, learning_rate=0.1)
-clf.fit(xtrain, ytrain)
-predictions = clf.predict(xvalid)
+XGB.fit(xtrain, ytrain)
+predictions = XGB.predict(xvalid)
 print("accuracy_score",accuracy_score(yvalid, predictions))
-xg = [clf.__class__,accuracy_score(yvalid, predictions)]
+xg = [XGB.__class__,accuracy_score(yvalid, predictions)]
 algo = algo.append([xg])
 
-clf = MultinomialNB()
-clf.fit(xtrain, ytrain)
-predictions = clf.predict(xvalid)
+MNB = MultinomialNB()
+MNB.fit(xtrain, ytrain)
+predictions = MNB.predict(xvalid)
 print("accuracy_score",accuracy_score(yvalid, predictions))
-mnb = [clf.__class__,accuracy_score(yvalid, predictions)]
+mnb = [MNB.__class__,accuracy_score(yvalid, predictions)]
 algo = algo.append([mnb])
 
-clf = AdaBoostClassifier()
-clf.fit(xtrain, ytrain)
-predictions = clf.predict(xvalid)
+ADC = AdaBoostClassifier()
+ADC.fit(xtrain, ytrain)
+predictions = ADC.predict(xvalid)
 print("accuracy_score",accuracy_score(yvalid, predictions))
-abc = [clf.__class__,accuracy_score(yvalid, predictions)]
+abc = [ADC.__class__,accuracy_score(yvalid, predictions)]
 algo = algo.append([abc])
 
-clf = KNeighborsClassifier()
-clf.fit(xtrain, ytrain)
-predictions = clf.predict(xvalid)
+KNC = KNeighborsClassifier()
+KNC.fit(xtrain, ytrain)
+predictions = KNC.predict(xvalid)
 print("accuracy_score",accuracy_score(yvalid, predictions))
-knc = [clf.__class__,accuracy_score(yvalid, predictions)]
+knc = [KNC.__class__,accuracy_score(yvalid, predictions)]
 algo = algo.append([knc])
 
-clf = GradientBoostingClassifier()
-clf.fit(xtrain, ytrain)
-predictions = clf.predict(xvalid)
+GBC = GradientBoostingClassifier()
+GBC.fit(xtrain, ytrain)
+predictions = GBC.predict(xvalid)
 print("accuracy_score",accuracy_score(yvalid, predictions))
-gbc = [clf.__class__,accuracy_score(yvalid, predictions)]
+gbc = [GBC.__class__,accuracy_score(yvalid, predictions)]
 algo = algo.append([gbc])
 
-clf = ExtraTreesClassifier()
-clf.fit(xtrain, ytrain)
-predictions = clf.predict(xvalid)
+ETC = ExtraTreesClassifier()
+ETC.fit(xtrain, ytrain)
+predictions = ETC.predict(xvalid)
 print("accuracy_score",accuracy_score(yvalid, predictions))
-etc = [clf.__class__,accuracy_score(yvalid, predictions)]
+etc = [ETC.__class__,accuracy_score(yvalid, predictions)]
 algo = algo.append([etc])
 
-clf = DecisionTreeClassifier()
-clf.fit(xtrain, ytrain)
-predictions = clf.predict(xvalid)
+DTC = DecisionTreeClassifier()
+DTC.fit(xtrain, ytrain)
+predictions = DTC.predict(xvalid)
 print("accuracy_score",accuracy_score(yvalid, predictions))
-dtc = [clf.__class__,accuracy_score(yvalid, predictions)]
+dtc = [DTC.__class__,accuracy_score(yvalid, predictions)]
 algo = algo.append([dtc])
 
-clf = RandomForestClassifier()
-clf.fit(xtrain, ytrain)
-predictions = clf.predict(xvalid)
+RFC = RandomForestClassifier()
+RFC.fit(xtrain, ytrain)
+predictions = RFC.predict(xvalid)
 print("accuracy_score",accuracy_score(yvalid, predictions))
-rfc = [clf.__class__,accuracy_score(yvalid, predictions)]
+rfc = [RFC.__class__,accuracy_score(yvalid, predictions)]
 algo = algo.append([rfc])
 
-clf = LinearSVC(penalty='l2', C=10.0)
-clf.fit(xtrain, ytrain)
-y_predict = clf.predict(xvalid)
+SVC = LinearSVC(penalty='l2', C=10.0)
+SVC.fit(xtrain, ytrain)
+predictions = SVC.predict(xvalid)
 print("accuracy_score",accuracy_score(yvalid, predictions))
-svc = [clf.__class__,accuracy_score(yvalid, predictions)]
+svc = [SVC.__class__,accuracy_score(yvalid, predictions)]
 algo = algo.append([svc])
+
+BC = BaggingClassifier(n_estimators=50)
+BC.fit(xtrain, ytrain)
+predictions = BC.predict(xvalid)
+print("accuracy_score",accuracy_score(yvalid, predictions))
+bc = [BC.__class__,accuracy_score(yvalid, predictions)]
+algo = algo.append([bc])
+
+
+VC = VotingClassifier(estimators=[('mnb',MNB), ('gbc', GBC),('dtc', DTC), ('knc',KNC), ('etc',ETC), ('bc',BC), ('xgb',XGB)], voting='hard')
+VC.fit(xtrain,ytrain)
+predictions = VC.predict(xvalid)
+print("accuracy_score",accuracy_score(yvalid, predictions))
+vc = [VC.__class__,accuracy_score(yvalid, predictions)]
+algo = algo.append([vc])
 
 
 print(algo.sort_values([1], ascending=[False]))

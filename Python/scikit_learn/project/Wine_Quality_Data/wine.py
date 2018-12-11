@@ -4,13 +4,11 @@ import tkinter
 import os
 from sklearn import preprocessing
 import xgboost as xgb
+from sklearn.ensemble import AdaBoostClassifier,ExtraTreesClassifier, VotingClassifier
 
 tr_data = pd.read_csv('tr_data.csv')
-
 tr_ans = pd.read_csv('tr_ans.csv')
-
 tr_ans = tr_ans.iloc[:, 0]
-
 ts_data = pd.read_csv('ts_data.csv')
 
 
@@ -26,10 +24,15 @@ for i in cate:
     le.fit(ts_data[i])
     ts_data[i] = le.transform(ts_data[i])
 
-XGB = xgb.XGBClassifier(max_depth=7, n_estimators=200, colsample_bytree=0.8,
-                        subsample=0.8, nthread=10, learning_rate=0.1)
-XGB.fit(tr_data, tr_ans)
-y_pred = XGB.predict(ts_data)
+XGB = xgb.XGBClassifier(max_depth=7, n_estimators=200, colsample_bytree=0.8, subsample=0.8, nthread=10, learning_rate=0.1)
+ETC = ExtraTreesClassifier()
+ADC = AdaBoostClassifier()
+
+VC = VotingClassifier(estimators=[('etc', ETC),('xgb', XGB), ('adc',ADC)], voting='hard')
+
+
+VC.fit(tr_data, tr_ans)
+y_pred = VC.predict(ts_data)
 
 
 pred_df = pd.DataFrame(y_pred)

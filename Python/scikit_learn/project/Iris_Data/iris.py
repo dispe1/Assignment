@@ -3,15 +3,16 @@ import pandas as pd
 import tkinter
 import os
 from sklearn import preprocessing
+import xgboost as xgb
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.ensemble import GradientBoostingClassifier,ExtraTreesClassifier, VotingClassifier, BaggingClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 
 tr_data = pd.read_csv('tr_data.csv')
-
 tr_ans = pd.read_csv('tr_ans.csv')
-
 tr_ans = tr_ans.iloc[:, 0]
-
 ts_data = pd.read_csv('ts_data.csv')
 
 
@@ -27,9 +28,18 @@ for i in cate:
     le.fit(ts_data[i])
     ts_data[i] = le.transform(ts_data[i])
 
-DT = DecisionTreeClassifier()
-DT.fit(tr_data, tr_ans)
-y_pred = DT.predict(ts_data)
+XGB = xgb.XGBClassifier(max_depth=7, n_estimators=200, colsample_bytree=0.8, subsample=0.8, nthread=10, learning_rate=0.1)
+MNB = MultinomialNB()
+KNC = KNeighborsClassifier()
+GBC = GradientBoostingClassifier()
+ETC = ExtraTreesClassifier()
+DTC = DecisionTreeClassifier()
+BC = BaggingClassifier(n_estimators=50)
+
+VC = VotingClassifier(estimators=[('mnb',MNB), ('gbc', GBC),('dtc', DTC), ('knc',KNC), ('etc',ETC), ('bc',BC), ('xgb',XGB)], voting='hard')
+
+VC.fit(tr_data, tr_ans)
+y_pred = VC.predict(ts_data)
 
 
 pred_df = pd.DataFrame(y_pred)
