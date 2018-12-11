@@ -16,8 +16,9 @@ import seaborn as sns
 import xgboost as xgb
 from sklearn.linear_model import Lasso, Ridge, LinearRegression
 from sklearn.svm import SVR
-from sklearn.ensemble import BaggingRegressor, RandomForestRegressor, GradientBoostingRegressor
+from sklearn.ensemble import BaggingRegressor, RandomForestRegressor, GradientBoostingRegressor, AdaBoostRegressor
 from sklearn.neighbors import KNeighborsRegressor
+from sklearn.tree import DecisionTreeRegressor
 
 from mlxtend.regressor import StackingRegressor
 
@@ -27,6 +28,7 @@ from math import sqrt
 
 
 df = pd.read_csv('./Ames_Housing_Sales.csv')
+'''
 print(df.head(5))
 
 print(df.describe())
@@ -35,7 +37,7 @@ print(df.isnull().sum())
 
 print("------  Data Types  ----- \n",df.dtypes)
 print("------  Data type Count  ----- \n",df.dtypes.value_counts())
-
+'''
 #Delete String columns
 string_columns = df.dtypes
 string_boolidx = string_columns == np.object
@@ -59,7 +61,7 @@ plt.title("Important variables correlation map", fontsize=15)
 plt.show()
 '''
 y = df['SalePrice']
-df = df.drop(['SalePrice', 'Exterior2nd','EnclosedPorch', 'RoofMatl', 'PoolQC', 'BsmtHalfBath', 'RoofStyle', 'PoolArea', 'MoSold', 'Alley', 'Fence', 'LandContour', 'MasVnrType', '3SsnPorch', 'LandSlope'],axis=1)
+df = df.drop(['SalePrice', '3SsnPorch', 'Alley', 'BsmtHalfBath', 'EnclosedPorch', 'Exterior2nd', 'Fence', 'LandContour', 'LandSlope', 'MasVnrType', 'MoSold', 'PoolArea', 'PoolQC', 'RoofMatl', 'RoofStyle'],axis=1)
 
 
 
@@ -69,31 +71,31 @@ xtrain, xvalid, ytrain, yvalid = train_test_split(df, y,
                                                   test_size=0.8, shuffle=True)
 #print(xtrain.shape, xvalid.shape, ytrain.shape, yvalid.shape)
 
-clf = LinearRegression()
-clf.fit(xtrain, ytrain)
-predictions = clf.predict(xvalid)
+LR = LinearRegression()
+LR.fit(xtrain, ytrain)
+predictions = LR.predict(xvalid)
 print("root_mean_squared_error",sqrt(mean_squared_error(yvalid, predictions)))
 print('r2 score: %.2f' % r2_score(yvalid, predictions))
 print('explained_variance_score: %.2f' % explained_variance_score(yvalid, predictions))
-lr = [clf.__class__,sqrt(mean_squared_error(yvalid, predictions))]
+lr = [LR.__class__,sqrt(mean_squared_error(yvalid, predictions))]
 algo = pd.DataFrame([lr])
 
-clf = Lasso()
-clf.fit(xtrain, ytrain)
-predictions = clf.predict(xvalid)
+LS = Lasso()
+LS.fit(xtrain, ytrain)
+predictions = LS.predict(xvalid)
 print("root_mean_squared_error",sqrt(mean_squared_error(yvalid, predictions)))
 print('r2 score: %.2f' % r2_score(yvalid, predictions))
 print('explained_variance_score: %.2f' % explained_variance_score(yvalid, predictions))
-lasso = [clf.__class__,sqrt(mean_squared_error(yvalid, predictions))]
+lasso = [LS.__class__,sqrt(mean_squared_error(yvalid, predictions))]
 algo = algo.append([lasso])
 
-clf = Ridge()
-clf.fit(xtrain, ytrain)
-predictions = clf.predict(xvalid)
+RD = Ridge()
+RD.fit(xtrain, ytrain)
+predictions = RD.predict(xvalid)
 print("root_mean_squared_error",sqrt(mean_squared_error(yvalid, predictions)))
 print('r2 score: %.2f' % r2_score(yvalid, predictions))
 print('explained_variance_score: %.2f' % explained_variance_score(yvalid, predictions))
-lidge = [clf.__class__,sqrt(mean_squared_error(yvalid, predictions))]
+lidge = [RD.__class__,sqrt(mean_squared_error(yvalid, predictions))]
 algo = algo.append([lidge])
 
 XGB = xgb.XGBRegressor(max_depth=20, n_estimators=300, colsample_bytree=0.4,
@@ -147,7 +149,35 @@ print('explained_variance_score: %.2f' % explained_variance_score(yvalid, predic
 gbr = [GBR.__class__,sqrt(mean_squared_error(yvalid, predictions))]
 algo = algo.append([gbr])
 
-STR = StackingRegressor(regressors=[BR, GBR], meta_regressor=XGB)
+SVR = SVR(kernel='rbf')
+SVR.fit(xtrain, ytrain)
+predictions = SVR.predict(xvalid)
+print("root_mean_squared_error",sqrt(mean_squared_error(yvalid, predictions)))
+print('r2 score: %.2f' % r2_score(yvalid, predictions))
+print('explained_variance_score: %.2f' % explained_variance_score(yvalid, predictions))
+svr = [SVR.__class__,sqrt(mean_squared_error(yvalid, predictions))]
+algo = algo.append([svr])
+
+DTR = DecisionTreeRegressor()
+DTR.fit(xtrain, ytrain)
+predictions = DTR.predict(xvalid)
+print("root_mean_squared_error",sqrt(mean_squared_error(yvalid, predictions)))
+print('r2 score: %.2f' % r2_score(yvalid, predictions))
+print('explained_variance_score: %.2f' % explained_variance_score(yvalid, predictions))
+dtr = [DTR.__class__,sqrt(mean_squared_error(yvalid, predictions))]
+algo = algo.append([dtr])
+
+ABR = AdaBoostRegressor()
+ABR.fit(xtrain, ytrain)
+predictions = ABR.predict(xvalid)
+print("root_mean_squared_error",sqrt(mean_squared_error(yvalid, predictions)))
+print('r2 score: %.2f' % r2_score(yvalid, predictions))
+print('explained_variance_score: %.2f' % explained_variance_score(yvalid, predictions))
+abr = [ABR.__class__,sqrt(mean_squared_error(yvalid, predictions))]
+algo = algo.append([abr])
+
+
+STR = StackingRegressor(regressors=[XGB,GBR,BR, RFR, RD, LS], meta_regressor=LR)
 STR.fit(xtrain, ytrain)
 predictions = STR.predict(xvalid)
 print("root_mean_squared_error",sqrt(mean_squared_error(yvalid, predictions)))
@@ -158,4 +188,4 @@ algo = algo.append([str])
 
 
 
-print(algo.sort_values([1], ascending=[False]))
+print(algo.sort_values([1], ascending=[True]))

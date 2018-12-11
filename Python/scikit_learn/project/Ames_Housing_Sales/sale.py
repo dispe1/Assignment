@@ -7,16 +7,13 @@ import xgboost as xgb
 from sklearn.linear_model import Lasso, Ridge, LinearRegression
 import numpy as np
 from sklearn.metrics import mean_squared_error, r2_score
-from sklearn.ensemble import BaggingRegressor
+from sklearn.ensemble import BaggingRegressor, RandomForestRegressor, GradientBoostingRegressor
+from mlxtend.regressor import StackingRegressor
 
 tr_data = pd.read_csv('tr_data.csv')
-
 tr_ans = pd.read_csv('tr_ans.csv')
-
 tr_ans = tr_ans.iloc[:, 0]
-
 ts_data = pd.read_csv('ts_data.csv')
-
 
 tr_data = tr_data.drop(['Exterior2nd','EnclosedPorch', 'RoofMatl', 'PoolQC', 'BsmtHalfBath', 'RoofStyle', 'PoolArea', 'MoSold', 'Alley', 'Fence', 'LandContour', 'MasVnrType', '3SsnPorch', 'LandSlope'],axis=1)
 ts_data = ts_data.drop(['Exterior2nd','EnclosedPorch', 'RoofMatl', 'PoolQC', 'BsmtHalfBath', 'RoofStyle', 'PoolArea', 'MoSold', 'Alley', 'Fence', 'LandContour', 'MasVnrType', '3SsnPorch', 'LandSlope'],axis=1)
@@ -42,25 +39,21 @@ ts_data_pre = ts_data_num.drop(ts_data_num.columns[total_nan_idx], axis=1)
 
 
 from sklearn.linear_model import Ridge
-'''
-rr = Ridge(alpha=0.001)
-rr = rr.fit(tr_data_pre, tr_ans)
 
-y_pred = rr.predict(ts_data_pre)
+XGB = xgb.XGBRegressor(max_depth=20, n_estimators=300, colsample_bytree=0.4, subsample=0.95, nthread=10, learning_rate=0.07, gamma=0.045,min_child_weight=1.5,reg_alpha=0.65,reg_lambda=0.45)
+LR = LinearRegression()
+LS = Lasso()
+RD = Ridge()
+BR = BaggingRegressor()
+GBR = GradientBoostingRegressor()
+RFR = RandomForestRegressor()
 
-lr = LinearRegression()
-lr.fit(tr_data_pre, tr_ans)
-y_pred = lr.predict(ts_data_pre)
 
-ls  = Lasso()
-ls.fit(tr_data_pre, tr_ans)
-y_pred = ls.predict(ts_data_pre)
-'''
+STR = StackingRegressor(regressors=[XGB,GBR,BR, RFR, RD, LS], meta_regressor=LR)
 
-XGB = xgb.XGBRegressor(max_depth=20, n_estimators=300, colsample_bytree=0.4,
-                        subsample=0.95, nthread=10, learning_rate=0.07, gamma=0.045,min_child_weight=1.5,reg_alpha=0.65,reg_lambda=0.45)
-XGB.fit(tr_data_pre, tr_ans)
-y_pred = XGB.predict(ts_data_pre)
+
+STR.fit(tr_data_pre, tr_ans)
+y_pred = STR.predict(ts_data_pre)
 
 
 pred_df = pd.DataFrame(y_pred)
