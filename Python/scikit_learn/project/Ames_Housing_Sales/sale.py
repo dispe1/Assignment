@@ -3,12 +3,12 @@ import pandas as pd
 import tkinter
 import os
 from sklearn import preprocessing
-import xgboost as xgb
-from sklearn.linear_model import Lasso, Ridge, LinearRegression
 import numpy as np
 from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.linear_model import Lasso, Ridge, LinearRegression
 from sklearn.ensemble import BaggingRegressor, RandomForestRegressor, GradientBoostingRegressor
 from mlxtend.regressor import StackingRegressor
+import xgboost as xgb
 
 tr_data = pd.read_csv('tr_data.csv')
 tr_ans = pd.read_csv('tr_ans.csv')
@@ -37,9 +37,6 @@ tr_data_pre = tr_data_num.drop(tr_data_num.columns[total_nan_idx], axis=1)
 ts_data_pre = ts_data_num.drop(ts_data_num.columns[total_nan_idx], axis=1)
 
 
-
-from sklearn.linear_model import Ridge
-
 XGB = xgb.XGBRegressor(max_depth=20, n_estimators=300, colsample_bytree=0.4, subsample=0.95, nthread=10, learning_rate=0.07, gamma=0.045,min_child_weight=1.5,reg_alpha=0.65,reg_lambda=0.45)
 LR = LinearRegression()
 LS = Lasso()
@@ -50,8 +47,6 @@ RFR = RandomForestRegressor()
 
 
 STR = StackingRegressor(regressors=[XGB,GBR,BR, RFR, RD, LS], meta_regressor=LR)
-
-
 STR.fit(tr_data_pre, tr_ans)
 y_pred = STR.predict(ts_data_pre)
 

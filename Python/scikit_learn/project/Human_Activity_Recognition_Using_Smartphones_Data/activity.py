@@ -5,7 +5,7 @@ import os
 from sklearn import preprocessing
 import xgboost as xgb
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import GradientBoostingClassifier, VotingClassifier
+from sklearn.ensemble import VotingClassifier
 from sklearn.svm import LinearSVC
 
 tr_data = pd.read_csv('tr_data.csv')
@@ -27,9 +27,7 @@ for i in cate:
     ts_data[i] = le.transform(ts_data[i])
 
 
-XGB = xgb.XGBClassifier(max_depth=7, n_estimators=200, colsample_bytree=0.8, subsample=0.8, nthread=10, learning_rate=0.1)
 LR = LogisticRegression(C=1.0)
-GBC = GradientBoostingClassifier()
 SVC = LinearSVC(penalty='l2', C=10.0)
 
 VC = VotingClassifier(estimators=[('lr', LR), ('svc',SVC)], voting='hard')
