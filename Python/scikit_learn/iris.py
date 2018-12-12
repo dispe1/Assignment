@@ -145,7 +145,7 @@ bc = [BC.__class__,accuracy_score(yvalid, predictions)]
 algo = algo.append([bc])
 
 
-VC = VotingClassifier(estimators=[('mnb',MNB), ('gbc', GBC),('dtc', DTC), ('knc',KNC), ('etc',ETC), ('bc',BC), ('xgb',XGB)], voting='hard')
+VC = VotingClassifier(estimators=[('mnb',MNB), ('gbc', GBC), ('knc',KNC), ('etc',ETC), ('xgb',XGB)], voting='hard')
 VC.fit(xtrain,ytrain)
 predictions = VC.predict(xvalid)
 print("accuracy_score",accuracy_score(yvalid, predictions))

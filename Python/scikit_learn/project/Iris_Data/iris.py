@@ -6,8 +6,7 @@ from sklearn import preprocessing
 import xgboost as xgb
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.ensemble import GradientBoostingClassifier,ExtraTreesClassifier, VotingClassifier, BaggingClassifier
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import GradientBoostingClassifier,ExtraTreesClassifier, VotingClassifier
 
 
 tr_data = pd.read_csv('tr_data.csv')
@@ -33,10 +32,8 @@ MNB = MultinomialNB()
 KNC = KNeighborsClassifier()
 GBC = GradientBoostingClassifier()
 ETC = ExtraTreesClassifier()
-DTC = DecisionTreeClassifier()
-BC = BaggingClassifier(n_estimators=50)
 
-VC = VotingClassifier(estimators=[('mnb',MNB), ('gbc', GBC),('dtc', DTC), ('knc',KNC), ('etc',ETC), ('bc',BC), ('xgb',XGB)], voting='hard')
+VC = VotingClassifier(estimators=[('mnb',MNB), ('gbc', GBC), ('knc',KNC), ('etc',ETC), ('xgb',XGB)], voting='hard')
 
 VC.fit(tr_data, tr_ans)
 y_pred = VC.predict(ts_data)
