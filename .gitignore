@@ -30,3 +30,11 @@ Android/classification/application/\.idea/
 *.tflite
 
 Android/MyApplication/\.idea/
+
+Android/classification/python/model/
+
+Android/classification/python/__pycache__/
+
+Android/classification/application/README\.md
+
+Android/classification/app-debug\.apk
