@@ -1,0 +1,193 @@
+fragment conv_layer(
+	input: tensor<scalar>,
+	channels: integer,
+	size: integer[],
+	border: string = 'constant',
+	padding: (integer, integer)[] = [],
+	stride: integer[] = [],
+	dilation: integer[] = [],
+	groups: integer = 1,
+	use_bias: logical = true,
+	scope: string )
+-> (output: tensor<scalar> )
+{
+	planes = shape_of(input)[1] / groups if groups != 0 else 1;
+	filter = variable(label = scope + '/filter', shape = [channels, planes] + size);
+	bias = variable(label = scope + '/bias', shape = [1, channels]) if use_bias else constant(shape=[1], value = [0.0]);
+	output = conv(input, filter, bias, border = border, padding = padding, stride = stride, dilation = dilation, output_shape = output_shape, gropus = groups);
+}
+
+fragment deconv_layer(
+	input: tensor<scalar>,
+	channels: integer,
+	size: integer[],
+	border: string = 'constant',
+	padding: (integer, integer)[] = [],
+	stride: integer[] = [],
+	dilation: integer[] = [],
+	output_shape: integer[] = [],
+	groups: integer = 1,
+	use_bias: logical = true,
+	scope: string )
+-> ( output: tensor<scalar> )
+{
+	planes = shape_of(input)[1] / groups if groups != 0 else 1;
+	filter = variable(label = scope + '/filter', shape = [channels, planes] + size);
+	bias = variable(label = scope + '/bias', shape = [1, channels])
+	if use_bias else constant(shape = [1], value = [0.0]);
+
+	output = deconv(input, filter, bias, border = border, padding = padding, stride = stride, dilation = dilation, output_shape = output_shape, groups = groups);
+}
+
+fragment batch_normalization_layer(
+	input: tensor<scalar>,
+	center: logical = true,
+	scale: logical = true,
+	epsilon: string,
+	scope: string)
+-> ( output: tensor<scalar> )
+{
+	shape = [1, shape_of(input)[1]];
+
+	gamma = variable(label = scope + '/gamma', shape = shape)
+		if scale else constant(shape = [1], value = [1.0]);
+
+	beta = variable(label = scope + '/beta', shape = shape)
+		if center else constant(shape = [1], value = [0.0]);
+	mean = variable(label = scope + '/mean', shape = shape);
+	variance = variable(label = scope + '/variance', shape = shape);
+
+	output = batch_normalization(input, mean, variance, beta, gamma, epsilon = epsilon);
+
+}
+
+fragment simple_recurrent_network(
+	x: tensor<scalar>,
+	n: integer )
+-> ( y: tensor<scalar> )
+{
+	k = shape_of(x)[0];
+	m = shape_of(x)[1];
+
+	W = variable(shape = [n, m], label = 'W');
+	U = variable(shape = [n, n], label = 'U');
+	b = variable(shape = [1, n], label = 'b');
+	s = variable(shape = [k, n], label = 's');
+
+	t = sigmoid(linear(W, x) + linear(U, s) + b);
+
+	 y = update(s, t);
+}
+
+fragment gru(
+	input: tensor<scalar>,
+	channels: integer,
+	scope: string)
+-> ( output: tensor<scalar> )
+{
+	batch = shape_of(input)[0];
+	h = variable(shape = [batch, channels], label = scope + '/h');
+	
+	m = concat([input, h], axis = 1);
+
+	z = sigmoid(linear_layer(m, channels = channels, scope = scope + '/z'));
+	r = sigmoid(linear_layer(m, channels = channels, scope = scope + '/r'));
+	s = tanh(linear_layer(concat([input, r * h], axis = 1), channels = channels, scope = scope + '/s'));
+
+	output = update(h, z * s + (1.0 - z) * h);
+} 
+
+graph ResNet( input ) -> ( output )
+{
+	input = external(shape = [1,3,224,224]);
+	conv1 = resnet_v1_conv_layer(input, channels = 64, size = [7,7], stride = [2,2], scope = 'conv1');
+	pool1 = max_pool_layer(conv1, size = [3,3], stride = [2,2],  padding = [(0,1), (0,1)]);
+	blocks = resnet_v1_blocks_101(pool1);
+	pooled = mean_reduce(blocks, axes = [2,3]);
+	logits = resnet_v1_conv_layer(pooled, channels = 1000, size = [1,1], activation = false, normalization = false, scope = 'logits');
+	output = softmax(logits);
+}
+
+graph GoogleNet( input ) -> (output )
+{
+	input = external(shape = [1, 3, 224, 224]);
+	conv1 = conv_layer(input, channels = 64, size = [7, 7], stride = [2, 2], padding = [(3,2), (3,2)], scope = 'conv1');
+	relu1 = relu(conv1);
+	pool1 = max_pool_layer(relu1, size = [3,3], stride = [2,2], padding = [(0,1), (0,1)]);
+	norm1 = local_response_normalization(pool1, size = [1,5,1,1], alpha = 0.0001, beta = 0.75, bias = 1.0);
+	conv2 = conv_layer(norm1, channels = 64, size = [1,1], scope = 'conv2');
+	relu2 = relu(conv2);
+	conv3 = conv_layer(relu2, channels = 192, size = [3,3], scope = 'conv3');
+	relu3 = relu(conv3);
+	norm2 = local_response_normalization(relu3, size = [1,5,1,1], alpha = 0.0001, beta = 0.75, bias = 1.0);
+	pool2 = max_pool_layer(norm2, size = [3,3], stride = [2,2], padding = [(0,1), (0,1)]);
+	incept1 = inception(pool2, channels = [64, 96, 128, 16, 32, 32], scope = 'incept1');
+	incept2 = inception(incept1, channels = [128, 128, 192, 32, 96, 64], scope = 'incept2');
+	pool3 = max_pool_layer(incept2, size = [3,3], stride = [2,2], padding = [(0,1), (0,1)]);
+	incept3 = inception(pool3, channels = [192, 96, 208, 16, 48, 64], scope = 'incept3');
+	incept4 = inception(incept3, channels = [160, 112, 224, 24, 64, 64], scope = 'incept4');
+	incept5 = inception(incept4, channels = [128, 128, 256, 24, 64, 64], scope = 'incept5');
+	incept6 = inception(incept5, channels = [112, 144, 288, 32, 64, 64], scope = 'incept6');
+	incept7 = inception(incept6, channels = [256, 160, 320, 32, 128, 128], scope = 'incept7');
+	pool4 = max_pool_layer(incept7, size = [3,3], stride = [2,2], padding = [(0,1), (0,1)]);
+	incept8 = inception(pool4, channels = [256, 160, 320, 32, 128, 128], scope = 'incept8');
+	incept9 = inception(incept8, channels = [384, 192, 384, 48, 128, 128], scope = 'incept9');
+	pool5 = avg_pool_layer(incept9, size = [7,7]);
+	conv4 = conv_layer(pool5, channels = 1000, size = [1, 1], scope = 'conv4');
+	logits = softmax(conv4);
+}
+
+
+TOKEN : /* keyword */
+{
+  "fragment"
+| "version"
+| "extension"
+| "graph" 
+| "tensor"
+| "integer"
+| "scalar"
+| "logical"
+| "string"
+| "shape_of"
+| "length_of"
+| "range_of"
+| "for"
+| "in"
+| "yield"
+}
+
+TOKEN : /*basic token*/
+{  
+  < IDENTIFIER : (["_","a"-"z","A"-"Z"])+(["a"-"z", "A"-"Z","0"-"9", "_"])* >
+| < NUMERIC_LITERAL : (["+","-"])?(["0"-"9"])+("."(["0"-"9"])+)?(["E","e"](["+","-"])?(["0"-"9"])+)? >
+| < STRING_LITERAL : ("'"|"\"")(["a"-"z","A"-"Z","/","_","0"-"9","[","]"])*("'"|"\"")>
+| < ARROW : "->">
+| < LOGICAL_LITERAL : ("true"|"false")>
+| < LESS : "<">
+| < LESS_EQUAL : "<=">
+| < GREATER : ">">
+| < GREATER_EQUAL : "=>">
+| < EQUAL : "==">
+| < NOT_EQUAL : "!=">
+| < PLUS : "+">
+| < MINUS : "-" >
+| < MULT : "*">
+| < DIV : "/">
+| < POW : "^">
+| < AND : "&">
+| < OR : "|">
+| < NOT : "!" >
+| < ASSIGN : "=">
+| < COMMA : "," >
+| < L_PAREN : "(">
+| < R_PAREN : ")">
+| < L_BRACKET : "[">
+| < R_BRACKET : "]" >
+| < L_BRACE : "{">
+| < R_BRACE : "}">
+| < COLON : ":">
+| < SEMI_COLON : ";">
+| < QUESTION : "?">
+| < DOT : ".">
+}

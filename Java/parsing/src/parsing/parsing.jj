@@ -1,0 +1,704 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */options{  static = false;
+
+  LOOKAHEAD = 6;
+  DEBUG_PARSER = false;
+}PARSER_BEGIN(parsing)package parsing;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+
+
+public class parsing{  public static void main(String args []) throws ParseException  {
+    String txt;
+    String fileName = "result.txt";    parsing parser = new parsing(System.in);
+    System.out.println("Reading from standard input...");
+    txt = parser.one_line();
+    System.out.println(txt);
+    try{
+      BufferedWriter fw = new BufferedWriter(new FileWriter(fileName));
+
+      fw.write(txt);
+      fw.flush();
+      fw.close();
+    }catch(Exception e) {
+      e.printStackTrace();
+    }  }}PARSER_END(parsing)SKIP :{  " "| "\r"| "\t"| "\n"
+| "\r\n"}
+
+TOKEN : /* keyword */
+{
+  "fragment"
+| "version"
+| "extension"
+| "graph" 
+| "tensor"
+| "integer"
+| "scalar"
+| "logical"
+| "string"
+| "shape_of"
+| "length_of"
+| "range_of"
+| "for"
+| "in"
+| "yield"
+| "if"
+| "else"
+}
+
+TOKEN : /*basic token*/
+{
+  < LOGICAL_LITERAL : ("true"|"false")>
+| < IDENTIFIER : (["_","a"-"z","A"-"Z"])+(["a"-"z", "A"-"Z","0"-"9", "_"])* >
+| < NUMERIC_LITERAL : (["+","-"])?(["0"-"9"])+("."(["0"-"9"])+)?(["E","e"](["+","-"])?(["0"-"9"])+)? >
+| < STRING_LITERAL : ("'"|"\"")(["a"-"z","A"-"Z","/","_","0"-"9","[","]"])*("'"|"\"")>
+| < ARROW : "->">
+| < LESS : "<">
+| < LESS_EQUAL : "<=">
+| < GREATER : ">">
+| < GREATER_EQUAL : "=>">
+| < EQUAL : "==">
+| < NOT_EQUAL : "!=">
+| < PLUS : "+">
+| < MINUS : "-" >
+| < MULT : "*">
+| < DIV : "/">
+| < POW : "^">
+| < AND : "&">
+| < OR : "|">
+| < NOT : "!" >
+| < ASSIGN : "=">
+| < COMMA : "," >
+| < L_PAREN : "(">
+| < R_PAREN : ")">
+| < L_BRACKET : "[">
+| < R_BRACKET : "]" >
+| < L_BRACE : "{">
+| < R_BRACE : "}">
+| < COLON : ":">
+| < SEMI_COLON : ";">
+| < QUESTION : "?">
+| < DOT : ".">
+}
+
+
+String one_line() :
+{
+  String res = "";
+}
+{
+  (
+    res = graph_definition() | res = fragment_definition()  ) {
+    return res;
+  }
+}
+
+String graph_definition() :
+{
+  String res = "";
+}
+{
+  graph_declaration() res = body()
+  {
+    return res;
+  }
+}
+
+void graph_declaration() :
+{
+}
+{
+  "graph" < IDENTIFIER > < L_PAREN > identifier_list() < R_PAREN > < ARROW > < L_PAREN > identifier_list() < R_PAREN >
+}
+
+void identifier_list():
+{
+}
+{
+	(< IDENTIFIER>)+(< COMMA > <IDENTIFIER >)*
+}
+
+String body():
+{
+  String res = "";
+  String temp = "";
+}
+{
+  < L_BRACE > (temp = assignment() {res = res.concat(temp);})+ < R_BRACE >
+  {
+    return res;
+  }
+}
+
+String assignment():
+{
+  String res1 = "";
+  String res2 = "";
+}
+{
+  res1 = lvalue_expr() < ASSIGN > res2 = rvalue_expr() <SEMI_COLON > 
+  {
+    return res1 + " = " + res2 + ";\r\n";
+  }
+}
+
+String invocation():
+{
+  Token var1;
+  String res = "";
+}
+{
+  var1 = < IDENTIFIER > [ <LESS > type_name() <GREATER > ] < L_PAREN > res = argument_list() < R_PAREN>
+  {
+    return var1.toString() +"(" + res + ")";
+  }
+
+}
+
+String argument_list():
+{
+  String res = "";
+  String temp = "";
+}
+{
+  res = argument() (< COMMA > temp = argument() {res = res.concat(", " + temp); })*
+  {
+    return res;
+  }
+}
+
+String argument():
+{
+  Token var;
+  String res = "";
+}
+{
+  var = < IDENTIFIER > < ASSIGN > res = rvalue_expr()  { return var.toString() + " = " + res; }
+| res = rvalue_expr() { return res; }
+}
+
+String array_lvalue_expr():
+{
+  String res = "";
+  String temp = "";
+}
+{
+  < L_BRACKET > [res = lvalue_expr() (< COMMA  > temp = lvalue_expr() {res = res.concat(", " + temp); })*] < R_BRACKET >
+  {
+    return "[" + res + "]";
+  }
+}
+
+String tuple_lvalue_expr():
+{
+  String res = "";
+  String temp = "";
+}
+{
+  < L_PAREN > [res = lvalue_expr()(< COMMA  > temp = lvalue_expr() {res = res.concat(", " + temp); })+] < R_PAREN >
+  {  return "(" + res + ")"; }
+}
+
+String lvalue_expr():
+{
+  Token var;
+  String res = "";
+}
+{
+  var =  < IDENTIFIER > { return var.toString(); }
+| res = array_lvalue_expr() { return res; }
+| res = tuple_lvalue_expr() { return res; }
+{
+return res;
+}
+}
+
+String array_rvalue_expr():
+{
+  String res = "";
+  String temp = "";
+}
+{
+  < L_BRACKET > [res = rvalue_expr() ([< COMMA  > {res = res.concat(", "); }] temp = rvalue_expr() {res =  res.concat(temp); })*] < R_BRACKET >
+  {
+    return "[" + res + "]";
+  }
+}
+
+String tuple_rvalue_expr():
+{
+  String res = "";
+  String temp = "";
+}
+{
+  < L_PAREN > [res = rvalue_expr()(< COMMA  > temp = rvalue_expr() {res =  res.concat(", " + temp); })+] < R_PAREN >
+  {  return "(" + res + ")"; }
+}
+
+String rvalue_expr():
+{
+  Token var;
+  String res = "";
+  String temp = "";
+}
+{
+  (
+ res = unary_expr() 
+| res = paren_expr() 
+| res = array_rvalue_expr() 
+| res = tuple_rvalue_expr()
+| res = comprehension_expr() 
+| res = builtin_expr() 
+| res = invocation() 
+| var =  < IDENTIFIER >  { res = var.toString(); } 
+| res = literal()
+) 
+( (temp = binary_expr()| temp = subscript_expr() | temp = if_else_expr() | temp = array_rvalue_expr())
+{  res = res.concat(temp); })*
+
+{
+  res = res.replace("variable", "tf.Variable");
+  res = res.replace("softmax", "tf.nn.softmax");
+  res = res.replace("max_pool_layer", "tf.nn.max_pool");
+  res = res.replace("conv(", "tf.layers.conv2d(");
+  res = res.replace("detf.layers.conv2d(", "tf.layers.conv2d_transpose(");
+  res = res.replace("constant", "tf.constant");
+  res = res.replace("tf.tf.constant", "tf.constant");
+  res = res.replace("sigmoid", "tf.sigmoid");
+  res = res.replace("concat", "tf.concat");
+  res = res.replace("tf.tf.concat", "tf.concat"); 
+  res = res.replace("tanh", "tf.tanh");
+  res = res.replace("relu(", "tf.nn.relu(");
+  res = res.replace("local_response_normalization", "tf.nn.local_response_normalization");
+  res = res.replace("conv_layer", "tf.nn.conv2d");
+  res = res.replace("_tf.nn.conv2d", "_conv_layer");
+  return res;
+}
+}
+
+String literal():
+{
+  Token var;
+}
+{
+  var = < LOGICAL_LITERAL > { return var.toString(); }
+| var = < NUMERIC_LITERAL > { return var.toString(); }
+| var = < STRING_LITERAL > { return var.toString(); } 
+  
+}
+
+String fragment_definition():
+{
+  String[] res1;
+  String res2 = "";
+}
+{
+  res1 = fragment_declaration() res2 = body()
+  {
+    return res1[0] +res2 + "\r\n" + res1[1];
+  }
+}
+
+String[] fragment_declaration():
+{
+  Token var;
+  String res1 = "";
+  String res2 = "";
+  String[] res = new String[2];
+}
+{
+  "fragment" var = < IDENTIFIER > < L_PAREN > res1 = parameter_list() < R_PAREN >
+  < ARROW > < L_PAREN > res2 = result_list() < R_PAREN >
+  {
+    res[0] = "def " + var.toString() + "(" + res1 + "):\r\n\r\n";
+    res[1] = "\nreturn " + res2;
+	return res;
+  }
+}
+
+String parameter_list():
+{
+  String res = "";
+  String temp = "";
+}
+{
+  res = parameter() (< COMMA > temp = parameter() {res = res.concat(", " + temp); })*
+  {
+    return res;
+  }
+}
+
+String parameter():
+{
+  Token var;
+}
+{
+  var = < IDENTIFIER > < COLON > type_spec() [< ASSIGN >] [literal_expr()]
+  {
+    return var.toString();
+  }
+}
+
+String result_list():
+{
+  String res = "";
+  String temp = "";
+}
+{
+  res = result() (< COMMA > temp = result() {res = res.concat(", " + temp); })*
+  {
+    return res;
+  }
+}
+
+String result():
+{
+  Token var;
+}
+{
+  var = < IDENTIFIER > < COLON > type_spec()
+  {
+    return var.toString();
+  }
+}
+
+String array_literal_expr():
+{
+  String res = "";
+  String temp = "";
+}
+{
+  < L_BRACKET > [res = literal_expr() (< COMMA  > temp = literal_expr() {res = res.concat(", " + temp); })*] < R_BRACKET >
+  {
+    return "[" + res + "]";
+  }
+}
+
+String tuple_literal_expr():
+{
+  String res = "";
+  String temp = "";
+}
+{
+  < L_PAREN > [res = literal_expr()(< COMMA  > temp = literal_expr() {res = res.concat(", " + temp); })+] < R_PAREN >
+  {  return "(" + res + ")"; }
+}
+
+String literal_expr():
+{
+  Token var;
+  String res = "";
+}
+{
+  res = literal() { return res; }
+| res = array_literal_expr() { return res; }
+| res = tuple_literal_expr() { return res; }
+}
+
+void type_name():
+{
+}
+{
+  "tensor"
+| "integer"
+| "scalar"
+| "logical"
+| "string"
+| "?"
+}
+
+void tensor_type_spec():
+{
+}
+{
+  "tensor" < LESS > [type_name()] < GREATER >
+}
+
+void array_type_spec():
+{
+}
+{
+  < L_BRACKET > < R_BRACKET >
+}
+
+void tuple_type_spec():
+{
+}
+{
+  < L_PAREN > type_spec() (< COMMA > type_spec())+ < R_PAREN >
+}
+
+void type_spec():
+{
+}
+{(
+  tensor_type_spec()
+| tuple_type_spec()
+| type_name() ) (array_type_spec())*
+}
+
+String comparison_operator():
+{
+  Token var;
+}
+{(
+  var = < LESS >
+| var = < LESS_EQUAL >
+| var = < GREATER >
+| var = < GREATER_EQUAL >
+| var = < EQUAL >
+| var = < NOT_EQUAL >
+| var = "in"
+)
+{
+	return var.toString();
+}
+}
+
+String binary_arithmetic_operator():
+{
+  Token var;
+}
+{
+  (
+  var = < PLUS >
+| var = < MINUS >
+| var = < MULT >
+| var = < DIV >
+| var = < POW >
+)
+{
+  return var.toString();
+}
+}
+
+String binary_logical_operator():
+{
+  Token var1;
+  Token var2;
+}
+{(
+  var1 = < AND > var2 = < AND >
+| var1 = < OR > var2 = < OR >
+)
+{
+  return var1.toString() + var2.toString();
+}
+}
+
+String binary_operator():
+{
+  String res = "";
+}
+{(
+  res = comparison_operator()
+| res = binary_arithmetic_operator()
+| res = binary_logical_operator()
+)
+{
+  return res;
+}
+}
+
+String unary_arithmetic_operator():
+{
+  Token var;
+}
+{(
+  var = < PLUS>
+| var = < MINUS>
+)
+{
+  return var.toString();
+}
+}
+
+String unary_logical_operator():
+{
+  Token var;
+}
+{
+  var = < NOT >
+  {
+    return var.toString();
+  }
+}
+
+String unary_operator():
+{
+  String res = "";
+}
+{(
+  res = unary_arithmetic_operator()
+| res = unary_logical_operator()
+)
+{
+  return res;
+}
+}
+
+String unary_expr():
+{
+  String res1 = "";
+  String res2 = "";
+}
+{
+  res1 = unary_operator() res2 = rvalue_expr()
+  {
+    return res1 + res2;
+  }
+}
+
+String binary_expr():
+{
+  String res1 = "";
+  String res2 = "";
+  String res3 = "";
+}
+{
+   res2 = binary_operator() res3 = rvalue_expr()
+  {
+    return res2 + res3 + res1;
+  }
+}
+
+String paren_expr():
+{
+  String res = "";
+}
+{
+  < L_PAREN > res = rvalue_expr() < R_PAREN >
+  {
+    return "(" + res + ")";
+  }
+}
+
+String if_else_expr():
+{
+  String res1 = "";
+  String res2 = "";
+  String res3 = "";
+}
+{
+  "if" res2 = rvalue_expr() "else" res3 = rvalue_expr()
+  {
+    return " if " + res2 + " else " + res3 + res1;
+  }
+}
+
+String loop_iter():
+{
+  Token var;
+  String res = "";
+}
+{
+  var =  < IDENTIFIER > "in" res = rvalue_expr()
+  {
+    return var.toString() + " in " + res;
+  }
+}
+
+String loop_iter_list():
+{
+  String res = "";
+  String temp = "";
+}
+{
+    res = loop_iter() (< COMMA  > temp = loop_iter() {res = res.concat(", " + temp); })*
+  {
+    return "[" + res + "]";
+  }
+}
+
+String comprehension_expr():
+{
+  Token var = new Token();
+  String res1 = "";
+  String res2 = "";
+  String res3 = "";
+}
+{
+  < L_BRACKET > "for" res1 = loop_iter_list() [var = "if" res2 = rvalue_expr() { res2 = " " + res2; }]
+  "yield" res3=rvalue_expr() < R_BRACKET >
+  {
+    return "[for " + res1 + var.toString() + res2 + " yield " + res3;
+  }
+}
+
+String subscript_expr():
+{
+  String res1 = "";
+  String res2 = "";
+  String res3 = "";
+}
+{(
+  < L_BRACKET > (res2 = rvalue_expr()
+  | res2 = rvalue_expr() < COLON > { res2 = res2.concat(" : "); } [res3 = rvalue_expr()]) < R_BRACKET > res1 = subscript_expr() 
+)
+  {
+    return "[" + res2 + res3 + "]" + res1;
+  }
+}
+
+String builtin_name():
+{
+}
+{
+  "shape_of" { return "tf.shape"; }
+| "length_of" { return "tf.strings.length"; }
+| "range_of" { return "tf.range";}
+| "integer" { return "integer";}
+| "scalar" { return "tf.summary.scalar";}
+| "logical" { return "logical";}
+| "string" { return "tf.strings";}
+}
+
+String builtin_expr():
+{
+  String res1 = "";
+  String res2 = "";
+}
+{
+  res1 = builtin_name() < L_PAREN > res2 = rvalue_expr() < R_PAREN >
+  {
+    return res1 + "(" + res2 + ")";
+  }
+}
+
+String document():
+{
+  String res1 = "";
+  String res2 = "";
+  String temp = "";
+}
+{
+  res1 = version() (temp =  extension() { res1 = res1.concat(temp); })* ( temp = fragment_definition() { res1 = res1.concat(temp); })* res2 = graph_definition()
+  {
+    return res1 + res2;
+  }
+}
+
+String version():
+{
+  Token var;
+}
+{
+  "version" var = < NUMERIC_LITERAL > < SEMI_COLON >
+  {
+    return "version " + var.toString() + ";";
+  }
+}
+
+String extension():
+{
+  Token var;
+  String res = "";
+}
+{
+  "extension" (var = < IDENTIFIER > { res = res.concat(var.toString()); })+ < SEMI_COLON >
+  {
+    return "extension " + res + ";";
+  }
+}

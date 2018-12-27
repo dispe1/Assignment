@@ -53,7 +53,7 @@ plt.show()
 xtrain, xvalid, ytrain, yvalid = train_test_split(df, y,
                                                   stratify=y,
                                                   random_state=42,
-                                                  test_size=0.8, shuffle=True)
+                                                  test_size=0.2, shuffle=True)
 #print(xtrain.shape, xvalid.shape, ytrain.shape, yvalid.shape)
 
 LR = LogisticRegression(C=1.0)

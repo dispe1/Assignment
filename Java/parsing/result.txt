@@ -1,0 +1,6 @@
+def avg_pool_layer(input, size, border, padding, stride, dilation):
+
+output = avg_pool(input, size = [1, 1]+size, border = border, padding = [(0, 0), (0, 0)]+padding if tf.strings.length(padding)!=0 else [], stride = [1, 1]+stride if tf.strings.length(stride)!=0 else [], dilation = [1, 1]+dilation if tf.strings.length(dilation)!=0 else []);
+
+
+return output
