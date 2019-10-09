@@ -172,6 +172,79 @@ public class Tsp {
 		in.close();
 	}
 
+	static int[] finalDemo(int N, double[][] distance, long start, double limitTime) {
+		int[] currentResult;
+		int[] bestResult = new int[N+1];
+		double bestDistance = 99999999;
+		double newDistance;
+		double currentDistance;
+		int count = 1;
+		double time = 0;
+		long end;
+		double temperature = 100;
+		double coolingRate = 0.00003;
+		double limitTemp = 1;	      
+
+		Tour tour = GAAlgorithm(N, distance, start, limitTime / 2);
+		currentResult = tour.result;
+		currentDistance = tour.distance;
+
+
+		int divide = N / 100;
+		while((time + (time/count) < limitTime) && temperature > limitTemp) {
+			for(int m = 0; m < divide && (time + (time/count)) < limitTime && temperature > limitTemp ; m++) {
+				for(int i = 1 + N * m / divide; i< N * (m+1) / divide && (time + (time/count)) < limitTime && temperature > limitTemp;i++) {
+					for(int j = i+1; j < N * (m+1) / divide && (time + (time/count)) < limitTime && temperature > limitTemp; j++) {
+						count++;
+						newDistance = currentDistance - distance[currentResult[i-1]][currentResult[i]] - distance[currentResult[j]][currentResult[j+1]] + distance[currentResult[i-1]][currentResult[j]] + distance[currentResult[i]][currentResult[j+1]];
+						if(probability(currentDistance,newDistance,temperature) > Math.random()) {
+							currentResult = twoOptSwap(currentResult, i, j);
+							currentDistance = newDistance;
+						}
+						else {
+							currentDistance = bestDistance;
+							System.arraycopy(bestResult, 0, currentResult, 0, N+1);
+							temperature *= 1 / (1 - coolingRate);
+						}
+						if(currentDistance < bestDistance) {
+							bestDistance = currentDistance;
+							System.arraycopy(currentResult, 0, bestResult, 0, N+1);
+							//System.out.println(count + " : " + temperature + " " + bestDistance );
+						}
+						end = System.currentTimeMillis();
+						time = ( end - start )/1000.0;
+						temperature *= (1 - coolingRate);
+					}
+				}
+			}
+			currentDistance = bestDistance;
+			System.arraycopy(bestResult, 0, currentResult, 0, N+1);
+			boolean changed = true;
+			while((time + (time/count) < limitTime) && changed) {
+				changed = false;
+				for(int i = 1; i< N && (time + (time/count)) < limitTime;i++) {
+					for(int j = i+1; j < N && (time + (time/count)) < limitTime; j++) {
+						count++;
+						newDistance = currentDistance - distance[currentResult[i-1]][currentResult[i]] - distance[currentResult[j]][currentResult[j+1]] + distance[currentResult[i-1]][currentResult[j]] + distance[currentResult[i]][currentResult[j+1]];
+						if(newDistance < bestDistance) {
+							currentResult = twoOptSwap(currentResult, i, j);
+							currentDistance = newDistance;
+							bestDistance = newDistance;
+							System.arraycopy(currentResult, 0, bestResult, 0, N+1);
+							//System.out.println(count + " : " + bestDistance);
+							changed = true;
+						}
+						end = System.currentTimeMillis();
+						time = ( end - start )/1000.0;
+					}
+				}
+			}   
+		}
+
+		return bestResult;
+	}
+
+
 
 	static class Tour implements Comparable<Tour>{
 		int[] result;
